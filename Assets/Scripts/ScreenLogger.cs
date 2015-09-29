@@ -18,6 +18,11 @@ public class ScreenLogger : MonoBehaviour {
 		Application.RegisterLogCallback(null);
 	}
 
+	void Update() {
+		while (queue.Count > Screen.height * Height / textHeight)
+			queue.Dequeue();
+	}
+
 	void OnGUI() {
         GUILayout.BeginArea(new Rect(20, Screen.height * (1 - Height) - 10, Screen.width - 20, Screen.height * Height));
 		
@@ -29,9 +34,6 @@ public class ScreenLogger : MonoBehaviour {
 
 	void HandleLog(string message, string stackTrace, LogType type) {
 		queue.Enqueue(message);
-
-        if (queue.Count > Screen.height * Height / textHeight)
-			queue.Dequeue();
 	}
 #endif
 }

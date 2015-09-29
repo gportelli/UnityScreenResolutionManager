@@ -24,22 +24,18 @@ public class ResolutionManager : MonoBehaviour {
 
     void Awake()
     {
-        Debug.Log("Current res: " + Screen.currentResolution.width + "x" + Screen.currentResolution.height);
-
         Instance = this;
     }
 
     void Start()
     {
-        Debug.Log("Current res: " + Screen.currentResolution.width + "x" + Screen.currentResolution.height);
-
-        //foreach (Resolution r in Screen.resolutions)
-            //Debug.Log(r.width + "x" + r.height);
-
-        //InitResolutions();   
-
         StartCoroutine(StartRoutine());
     }
+
+	private void printResolution()
+	{
+		Debug.Log ("Current res: " + Screen.currentResolution.width + "x" + Screen.currentResolution.height);
+	}
 
     private IEnumerator StartRoutine()
     {
@@ -139,11 +135,6 @@ public class ResolutionManager : MonoBehaviour {
 
     public void SetResolution(int index, bool fullscreen)
     {
-        StartCoroutine(_SetResolution(index, fullscreen));
-    }
-
-    private IEnumerator _SetResolution(int index, bool fullscreen)
-    {
         Vector2 r = new Vector2();
         if (fullscreen)
         {
@@ -156,29 +147,42 @@ public class ResolutionManager : MonoBehaviour {
             r = WindowedResolutions[currWindowedRes];
         }
 
+		bool fullscreen2windowed = Screen.fullScreen & !fullscreen;
+
+		Screen.SetResolution ((int)r.x, (int)r.y, fullscreen);
+
 		if (Application.platform == RuntimePlatform.OSXPlayer) {
-			bool fullscreen2windowed = Screen.fullScreen & !fullscreen;
+			StopAllCoroutines();
 
-			Debug.Log ("Setting resolution to " + r.x + "x" + r.y);
-			Screen.SetResolution ((int)r.x, (int)r.y, fullscreen);
+			if(fullscreen2windowed) StartCoroutine (SetResolutionAfterResize (r));
+		}
+    }
 
-			if(fullscreen2windowed) {
-				yield return new WaitForSeconds(3);
+	private IEnumerator SetResolutionAfterResize(Vector2 r) {
+		int maxTime = 5;
+		float time = Time.time;
 
-				Debug.Log ("Setting resolution to " + r.x + "x" + r.y);
-				Screen.SetResolution ((int)r.x, (int)r.y, fullscreen);
+		yield return null;
+		yield return null;
+
+		int lastW = Screen.width;
+		int lastH = Screen.height;
+
+		while (Time.time - time < maxTime) {
+			if(lastW != Screen.width || lastH != Screen.height) {
+				Debug.Log ("Resize! " + Screen.width + "x" + Screen.height);
+
+				Screen.SetResolution ((int)r.x, (int)r.y, Screen.fullScreen);
+				yield break;
+
+				lastW = Screen.width; lastH = Screen.height;
 			}
-		} else {
-			Debug.Log ("Setting resolution to " + r.x + "x" + r.y);
-			Screen.SetResolution ((int)r.x, (int)r.y, fullscreen);
+
+			yield return null;
 		}
 
-        // Wait a single frame for Screen class parameters to update
-        yield return null;
-
-        Debug.Log("Current res: " + Screen.currentResolution.width + "x" + Screen.currentResolution.height);
-        AspectUtility.SetCameras();
-    }
+		Debug.Log ("End waiting");
+	}
 
     public void ToggleFullscreen()
     {

@@ -1,17 +1,17 @@
-﻿﻿using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class AspectUtility : MonoBehaviour
 {
-    static List<Camera> cams;
-    static Camera backgroundCam;
+	static Camera backgroundCam;
+	static Camera staticCam; // This is the last camera where Awake is called. It is used for the static getter methods.
+	Camera cam;
 
     void Awake()
     {
-        if (cams == null) cams = new List<Camera>();
+        cam = camera;
 
-        Camera cam = camera;
         if (!cam)
         {
             cam = Camera.main;
@@ -22,21 +22,14 @@ public class AspectUtility : MonoBehaviour
             return;
         }
 
-        if (cams.IndexOf(cam) == -1)
-            cams.Add(cam);
+		staticCam = cam;
 
-        SetCamera(cam);
+		UpdateCamera ();
     }
 
-    public static void SetCameras()
+    private void UpdateCamera()
     {
-        foreach (Camera c in cams)
-            SetCamera(c);
-    }
-
-    public static void SetCamera(Camera cam)
-    {
-        if (!ResolutionManager.FixedAspectRatio) return;
+        if (!ResolutionManager.FixedAspectRatio || !cam) return;
 
         float currentAspectRatio = (float)Screen.width / Screen.height;
 
@@ -80,7 +73,7 @@ public class AspectUtility : MonoBehaviour
     {
         get
         {
-            return (int)(Screen.height * cams[0].rect.height);
+			return (int)(Screen.height * staticCam.rect.height);
         }
     }
 
@@ -88,7 +81,7 @@ public class AspectUtility : MonoBehaviour
     {
         get
         {
-            return (int)(Screen.width * cams[0].rect.width);
+			return (int)(Screen.width * staticCam.rect.width);
         }
     }
 
@@ -96,7 +89,7 @@ public class AspectUtility : MonoBehaviour
     {
         get
         {
-            return (int)(Screen.width * cams[0].rect.x);
+			return (int)(Screen.width * staticCam.rect.x);
         }
     }
 
@@ -104,7 +97,7 @@ public class AspectUtility : MonoBehaviour
     {
         get
         {
-            return (int)(Screen.height * cams[0].rect.y);
+			return (int)(Screen.height * staticCam.rect.y);
         }
     }
 
@@ -112,7 +105,7 @@ public class AspectUtility : MonoBehaviour
     {
         get
         {
-            return new Rect(cams[0].rect.x * Screen.width, cams[0].rect.y * Screen.height, cams[0].rect.width * Screen.width, cams[0].rect.height * Screen.height);
+			return new Rect(staticCam.rect.x * Screen.width, staticCam.rect.y * Screen.height, staticCam.rect.width * Screen.width, staticCam.rect.height * Screen.height);
         }
     }
 
@@ -121,8 +114,8 @@ public class AspectUtility : MonoBehaviour
         get
         {
             Vector3 mousePos = Input.mousePosition;
-            mousePos.y -= (int)(cams[0].rect.y * Screen.height);
-            mousePos.x -= (int)(cams[0].rect.x * Screen.width);
+			mousePos.y -= (int)(staticCam.rect.y * Screen.height);
+			mousePos.x -= (int)(staticCam.rect.x * Screen.width);
             return mousePos;
         }
     }
@@ -132,9 +125,20 @@ public class AspectUtility : MonoBehaviour
         get
         {
             Vector2 mousePos = Event.current.mousePosition;
-            mousePos.y = Mathf.Clamp(mousePos.y, cams[0].rect.y * Screen.height, cams[0].rect.y * Screen.height + cams[0].rect.height * Screen.height);
-            mousePos.x = Mathf.Clamp(mousePos.x, cams[0].rect.x * Screen.width, cams[0].rect.x * Screen.width + cams[0].rect.width * Screen.width);
+			mousePos.y = Mathf.Clamp(mousePos.y, staticCam.rect.y * Screen.height, staticCam.rect.y * Screen.height + staticCam.rect.height * Screen.height);
+			mousePos.x = Mathf.Clamp(mousePos.x, staticCam.rect.x * Screen.width, staticCam.rect.x * Screen.width + staticCam.rect.width * Screen.width);
             return mousePos;
         }
     }
+
+	private int lastWidth = -1, lastHeight = -1;
+	public void Update()
+	{
+		if (Screen.width != lastWidth || Screen.height != lastHeight) {
+			lastWidth = Screen.width;
+			lastHeight = Screen.height;
+
+			UpdateCamera();
+		}
+	}
 }

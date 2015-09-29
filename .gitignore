@@ -3,7 +3,7 @@
 # =============== #
 Temp/
 Library/
-build/
+Builds/
 UnityVS/
 UnityVS.*
 
