@@ -9,12 +9,12 @@ public class ResolutionManager : MonoBehaviour {
 
     // Fixed aspect ratio parameters
     static public bool  FixedAspectRatio = true;
-    static public float TargetAspectRatio = 16f / 9f;
+    static public float TargetAspectRatio = 4 / 3f;
 
     // Windowed aspect ratio when FixedAspectRatio is false
     static public float WindowedAspectRatio = 4f / 3f;
 
-    // List of horizontal resolution to include
+    // List of horizontal resolutions to include
     int[] resolutions = new int[] { 600, 800, 1024, 1280, 1400, 1600, 1920 };
 
     public Resolution NativeResolution;
@@ -149,33 +149,38 @@ public class ResolutionManager : MonoBehaviour {
 
 		bool fullscreen2windowed = Screen.fullScreen & !fullscreen;
 
+        Debug.Log("Setting resolution to " + (int)r.x + "x" + (int)r.y);
 		Screen.SetResolution ((int)r.x, (int)r.y, fullscreen);
 
+        // On OSX the application will pass from fullscreen to windowed with an animated transition of a couple of seconds.
+        // After this transition, the first time you exit fullscreen you have to call SetResolution again to ensure that the window is resized correctly.
 		if (Application.platform == RuntimePlatform.OSXPlayer) {
-			StopAllCoroutines();
+            // Ensure that there is no SetResolutionAfterResize coroutine running and waiting for screen size changes
+            StopAllCoroutines(); 
 
+            // Resize the window again after the end of the resize transition
 			if(fullscreen2windowed) StartCoroutine (SetResolutionAfterResize (r));
 		}
     }
 
 	private IEnumerator SetResolutionAfterResize(Vector2 r) {
-		int maxTime = 5;
+		int maxTime = 5; // Max wait for the end of the resize transition
 		float time = Time.time;
 
+        // Skipping a couple of frames during which the screen size will change
 		yield return null;
 		yield return null;
 
 		int lastW = Screen.width;
 		int lastH = Screen.height;
 
+        // Waiting for another screen size change at the end of the transition animation
 		while (Time.time - time < maxTime) {
 			if(lastW != Screen.width || lastH != Screen.height) {
 				Debug.Log ("Resize! " + Screen.width + "x" + Screen.height);
 
 				Screen.SetResolution ((int)r.x, (int)r.y, Screen.fullScreen);
 				yield break;
-
-				lastW = Screen.width; lastH = Screen.height;
 			}
 
 			yield return null;

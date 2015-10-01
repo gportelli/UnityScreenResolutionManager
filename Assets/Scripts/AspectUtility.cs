@@ -10,7 +10,7 @@ public class AspectUtility : MonoBehaviour
 
     void Awake()
     {
-        cam = camera;
+        cam = GetComponent<Camera>();
 
         if (!cam)
         {
@@ -61,7 +61,7 @@ public class AspectUtility : MonoBehaviour
         if (!backgroundCam)
         {
             // Make a new camera behind the normal camera which displays black; otherwise the unused space is undefined
-            backgroundCam = new GameObject("BackgroundCam", typeof(Camera)).camera;
+            backgroundCam = new GameObject("BackgroundCam", typeof(Camera)).GetComponent<Camera>();
             backgroundCam.depth = int.MinValue;
             backgroundCam.clearFlags = CameraClearFlags.SolidColor;
             backgroundCam.backgroundColor = Color.black;
