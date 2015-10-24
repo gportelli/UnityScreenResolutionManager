@@ -5,17 +5,17 @@ public class ScreenLogger : MonoBehaviour {
     [Tooltip("Height of the log area as a percentage of the screen height")]
     public float Height = 0.5f;
 
-#if !UNITY_EDITOR
+//#if !UNITY_EDITOR
 	static Queue<string> queue = new Queue<string>();
     const int textHeight = 24;
 
 
 	void OnEnable() {
-		Application.RegisterLogCallback(HandleLog);
+		Application.logMessageReceived += HandleLog;
 	}
 
 	void OnDisable() {
-		Application.RegisterLogCallback(null);
+		Application.logMessageReceived -= HandleLog;
 	}
 
 	void Update() {
@@ -35,5 +35,5 @@ public class ScreenLogger : MonoBehaviour {
 	void HandleLog(string message, string stackTrace, LogType type) {
 		queue.Enqueue(message);
 	}
-#endif
+//#endif
 }
