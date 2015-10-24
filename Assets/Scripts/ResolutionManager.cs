@@ -17,7 +17,7 @@ public class ResolutionManager : MonoBehaviour {
     // List of horizontal resolutions to include
     int[] resolutions = new int[] { 600, 800, 1024, 1280, 1400, 1600, 1920 };
 
-    public Resolution NativeResolution;
+    public Resolution DisplayResolution;
     public List<Vector2> WindowedResolutions, FullscreenResolutions;
 
     int currWindowedRes, currFullscreenRes;
@@ -40,7 +40,7 @@ public class ResolutionManager : MonoBehaviour {
     private IEnumerator StartRoutine()
     {
 		if (Application.platform == RuntimePlatform.OSXPlayer) {
-			NativeResolution = Screen.currentResolution;
+			DisplayResolution = Screen.currentResolution;
 		}
 		else 
 		{
@@ -51,13 +51,13 @@ public class ResolutionManager : MonoBehaviour {
 				yield return null;
 				yield return null;
 
-				NativeResolution = Screen.currentResolution;
+				DisplayResolution = Screen.currentResolution;
 
 				Screen.SetResolution (r.width, r.height, true);
 
 				yield return null;
 			} else {
-				NativeResolution = Screen.currentResolution;
+				DisplayResolution = Screen.currentResolution;
 			}
 		}
 
@@ -66,19 +66,19 @@ public class ResolutionManager : MonoBehaviour {
 
     private void InitResolutions()
     {
-        float screenAspect = (float)NativeResolution.width / NativeResolution.height;
+        float screenAspect = (float)DisplayResolution.width / DisplayResolution.height;
 
         WindowedResolutions   = new List<Vector2>();
         FullscreenResolutions = new List<Vector2>();
 
         foreach(int w in resolutions) {
-            if (w < NativeResolution.width)
+            if (w < DisplayResolution.width)
             {
                 // Adding resolution only if it's 20% smaller than the screen
-                if (w < NativeResolution.width * 0.8f)
+                if (w < DisplayResolution.width * 0.8f)
                 {
                     Vector2 windowedResolution = new Vector2(w, Mathf.Round(w / (FixedAspectRatio ? TargetAspectRatio : WindowedAspectRatio)));
-                    if (windowedResolution.y < NativeResolution.height * 0.8f)
+                    if (windowedResolution.y < DisplayResolution.height * 0.8f)
                         WindowedResolutions.Add(windowedResolution);
 
                     FullscreenResolutions.Add(new Vector2(w, Mathf.Round(w / screenAspect)));
@@ -87,10 +87,10 @@ public class ResolutionManager : MonoBehaviour {
         }
 
         // Adding fullscreen native resolution
-        FullscreenResolutions.Add(new Vector2(NativeResolution.width, NativeResolution.height));
+        FullscreenResolutions.Add(new Vector2(DisplayResolution.width, DisplayResolution.height));
 
         // Adding half fullscreen native resolution
-        Vector2 halfNative = new Vector2(NativeResolution.width * 0.5f, NativeResolution.height * 0.5f);
+        Vector2 halfNative = new Vector2(DisplayResolution.width * 0.5f, DisplayResolution.height * 0.5f);
         if (halfNative.x > resolutions[0] && FullscreenResolutions.IndexOf(halfNative) == -1)
             FullscreenResolutions.Add(halfNative);
 
