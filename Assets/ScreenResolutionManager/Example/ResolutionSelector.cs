@@ -28,6 +28,12 @@ public class ResolutionSelector : MonoBehaviour {
             i++;
         }
 
+        if (GUILayout.Button("Get Current Resolution"))
+        {
+            Resolution r = Screen.currentResolution;
+            Debug.Log("Display resolution is " + r.width + "x" + r.height);
+        }
+
         GUILayout.EndArea();
     }
 }

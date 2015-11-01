@@ -4,11 +4,12 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
 
-public class ResolutionManager : MonoBehaviour {
+public class ResolutionManager : MonoBehaviour
+{
     static public ResolutionManager Instance;
 
     // Fixed aspect ratio parameters
-    static public bool  FixedAspectRatio = true;
+    static public bool FixedAspectRatio = true;
     static public float TargetAspectRatio = 4 / 3f;
 
     // Windowed aspect ratio when FixedAspectRatio is false
@@ -32,34 +33,38 @@ public class ResolutionManager : MonoBehaviour {
         StartCoroutine(StartRoutine());
     }
 
-	private void printResolution()
-	{
-		Debug.Log ("Current res: " + Screen.currentResolution.width + "x" + Screen.currentResolution.height);
-	}
+    private void printResolution()
+    {
+        Debug.Log("Current res: " + Screen.currentResolution.width + "x" + Screen.currentResolution.height);
+    }
 
     private IEnumerator StartRoutine()
     {
-		if (Application.platform == RuntimePlatform.OSXPlayer) {
-			DisplayResolution = Screen.currentResolution;
-		}
-		else 
-		{
-			if (Screen.fullScreen) {
-				Resolution r = Screen.currentResolution;
-				Screen.fullScreen = false;
+        if (Application.platform == RuntimePlatform.OSXPlayer)
+        {
+            DisplayResolution = Screen.currentResolution;
+        }
+        else
+        {
+            if (Screen.fullScreen)
+            {
+                Resolution r = Screen.currentResolution;
+                Screen.fullScreen = false;
 
-				yield return null;
-				yield return null;
+                yield return null;
+                yield return null;
 
-				DisplayResolution = Screen.currentResolution;
+                DisplayResolution = Screen.currentResolution;
 
-				Screen.SetResolution (r.width, r.height, true);
+                Screen.SetResolution(r.width, r.height, true);
 
-				yield return null;
-			} else {
-				DisplayResolution = Screen.currentResolution;
-			}
-		}
+                yield return null;
+            }
+            else
+            {
+                DisplayResolution = Screen.currentResolution;
+            }
+        }
 
         InitResolutions();
     }
@@ -68,10 +73,11 @@ public class ResolutionManager : MonoBehaviour {
     {
         float screenAspect = (float)DisplayResolution.width / DisplayResolution.height;
 
-        WindowedResolutions   = new List<Vector2>();
+        WindowedResolutions = new List<Vector2>();
         FullscreenResolutions = new List<Vector2>();
 
-        foreach(int w in resolutions) {
+        foreach (int w in resolutions)
+        {
             if (w < DisplayResolution.width)
             {
                 // Adding resolution only if it's 20% smaller than the screen
@@ -104,7 +110,8 @@ public class ResolutionManager : MonoBehaviour {
 
             for (int i = 0; i < FullscreenResolutions.Count; i++)
             {
-                if(FullscreenResolutions[i].x == Screen.width && FullscreenResolutions[i].y == Screen.height) {
+                if (FullscreenResolutions[i].x == Screen.width && FullscreenResolutions[i].y == Screen.height)
+                {
                     currFullscreenRes = i;
                     found = true;
                     break;
@@ -147,47 +154,51 @@ public class ResolutionManager : MonoBehaviour {
             r = WindowedResolutions[currWindowedRes];
         }
 
-		bool fullscreen2windowed = Screen.fullScreen & !fullscreen;
+        bool fullscreen2windowed = Screen.fullScreen & !fullscreen;
 
         Debug.Log("Setting resolution to " + (int)r.x + "x" + (int)r.y);
-		Screen.SetResolution ((int)r.x, (int)r.y, fullscreen);
+        Screen.SetResolution((int)r.x, (int)r.y, fullscreen);
 
         // On OSX the application will pass from fullscreen to windowed with an animated transition of a couple of seconds.
         // After this transition, the first time you exit fullscreen you have to call SetResolution again to ensure that the window is resized correctly.
-		if (Application.platform == RuntimePlatform.OSXPlayer) {
+        if (Application.platform == RuntimePlatform.OSXPlayer)
+        {
             // Ensure that there is no SetResolutionAfterResize coroutine running and waiting for screen size changes
-            StopAllCoroutines(); 
+            StopAllCoroutines();
 
             // Resize the window again after the end of the resize transition
-			if(fullscreen2windowed) StartCoroutine (SetResolutionAfterResize (r));
-		}
+            if (fullscreen2windowed) StartCoroutine(SetResolutionAfterResize(r));
+        }
     }
 
-	private IEnumerator SetResolutionAfterResize(Vector2 r) {
-		int maxTime = 5; // Max wait for the end of the resize transition
-		float time = Time.time;
+    private IEnumerator SetResolutionAfterResize(Vector2 r)
+    {
+        int maxTime = 5; // Max wait for the end of the resize transition
+        float time = Time.time;
 
         // Skipping a couple of frames during which the screen size will change
-		yield return null;
-		yield return null;
+        yield return null;
+        yield return null;
 
-		int lastW = Screen.width;
-		int lastH = Screen.height;
+        int lastW = Screen.width;
+        int lastH = Screen.height;
 
         // Waiting for another screen size change at the end of the transition animation
-		while (Time.time - time < maxTime) {
-			if(lastW != Screen.width || lastH != Screen.height) {
-				Debug.Log ("Resize! " + Screen.width + "x" + Screen.height);
+        while (Time.time - time < maxTime)
+        {
+            if (lastW != Screen.width || lastH != Screen.height)
+            {
+                Debug.Log("Resize! " + Screen.width + "x" + Screen.height);
 
-				Screen.SetResolution ((int)r.x, (int)r.y, Screen.fullScreen);
-				yield break;
-			}
+                Screen.SetResolution((int)r.x, (int)r.y, Screen.fullScreen);
+                yield break;
+            }
 
-			yield return null;
-		}
+            yield return null;
+        }
 
-		Debug.Log ("End waiting");
-	}
+        Debug.Log("End waiting");
+    }
 
     public void ToggleFullscreen()
     {
